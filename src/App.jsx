@@ -1,9 +1,12 @@
 import "./App.css";
+import Trainer from "./components/Trainer/Trainer";
 
 function App() {
-  const [count, setCount] = useState(0);
-
-  return <></>;
+  return (
+    <>
+      <Trainer />
+    </>
+  );
 }
 
 export default App;
