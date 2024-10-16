@@ -1,6 +1,5 @@
 import React from "react";
 import TrainerCreation from "./TrainerCreation";
-import TrainerReflection from "./TrainerReflection";
 import { useState } from "react";
 
 export default function Trainer() {

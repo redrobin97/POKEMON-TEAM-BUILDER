@@ -4,8 +4,6 @@ import { useState } from "react";
 export default function TrainerCreation({ getTrainerName, getTrainerGender }) {
   const [trainerName, setTrainerName] = useState(``);
   const [trainerGender, setTrainerGender] = useState(``);
-  console.log(trainerName);
-  console.log(trainerGender);
 
   const handleSubmit = (e) => {
     e.preventDefault();
