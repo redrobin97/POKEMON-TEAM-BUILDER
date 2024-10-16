@@ -1,0 +1,10 @@
+//scaffold
+
+/front end
+sign-in / log-in
+team builder
+local storage
+
+/back end
+node server for saving teams and authentication
+data base to store info for later

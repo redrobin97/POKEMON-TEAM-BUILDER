@@ -1,0 +1,20 @@
+.party-container {
+  display: flex;
+  text-align: center;
+  color: yellow;
+  background-color: white;
+}
+
+.pokemon-container {
+  width: 250px;
+  height: 350px;
+  padding: 3px;
+  background-color: blue;
+  margin: 5px;
+}
+
+.poke-image-container {
+  width: 90%;
+  height: 45%;
+  background-color: white;
+}
