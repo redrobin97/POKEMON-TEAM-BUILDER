@@ -3,16 +3,16 @@ const bcrypt = require("bcrypt");
 const SALT_COUNT = 10;
 
 //create user in db req(id, username)
-async function createUser({ username, password }) {
-  const hashedpwd = await bcrypt.hash(password, SALT_COUNT);
+async function createUser({ username, password, role }) {
   try {
+    const hashedpwd = await bcrypt.hash(password, SALT_COUNT);
     // const res = await client.query(
     const {
       rows: [newUser],
     } = await client.query(
       `
-        INSERT INTO users(username, password) VALUES($1, $2) ON CONFLICT (username) DO NOTHING RETURNING id, username`,
-      [username, hashedpwd]
+        INSERT INTO users(username, password, role) VALUES($1, $2, $3) ON CONFLICT (username) DO NOTHING RETURNING id, username`,
+      [username, hashedpwd, role]
     );
     // return res.rows[0];
     return newUser;
@@ -42,7 +42,10 @@ async function getUser({ username, password }) {
   if (!username || !password) return;
   try {
     const user = await getUserByUsername(username);
-    if (!user) return;
+    if (!user) {
+      console.log(user);
+      return null;
+    }
     const hashedpwd = user.password;
     const passwordMatch = await bcrypt.compare(password, hashedpwd);
     if (!passwordMatch) return;
@@ -79,7 +82,44 @@ async function deleteUser({ username, password }) {
       [username]
     );
 
-    return { user: userToDelete, result: deleteQuery };
+    return { user: userToDelete };
+  } catch (err) {
+    throw err;
+  }
+}
+//change password taking username, password
+async function updatePassword({ username, password, newPassword }) {
+  try {
+    const userToChange = await getUser({ username, password });
+    if (!userToChange) return null;
+    const hashedpwd = await bcrypt.hash(newPassword, SALT_COUNT);
+    const { rowCount } = await client.query(
+      `
+          UPDATE users SET password = $1 WHERE username = $2`,
+      [hashedpwd, username]
+    );
+
+    if (rowCount === 0) return null;
+
+    return { message: "Password updated successfully", user: userToChange };
+  } catch (err) {
+    throw err;
+  }
+}
+
+//change username
+async function updateUsername({ id, newUsername }) {
+  try {
+    const userToChange = await getUserById(id);
+    if (!userToChange) return null;
+    const { rowCount } = await client.query(
+      `
+      UPDATE users SET username = $1 WHERE id = $2`,
+      [newUsername, id]
+    );
+    if (rowCount === 0) return null;
+    const updatedUser = await getUserById(id);
+    return { message: "Username changed successfully", user: updatedUser };
   } catch (err) {
     throw err;
   }
@@ -91,4 +131,6 @@ module.exports = {
   getUserByUsername,
   deleteUser,
   getUserById,
+  updatePassword,
+  updateUsername,
 };

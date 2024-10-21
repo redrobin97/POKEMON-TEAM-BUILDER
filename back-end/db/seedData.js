@@ -26,6 +26,7 @@ async function createUserTables() {
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        role VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   } catch (err) {
     throw err;
@@ -68,9 +69,9 @@ async function createInitialUsers() {
   console.log("initializing dummy users...");
   try {
     const fakeUsers = [
-      { username: "user1", password: "password1" },
-      { username: "user2", password: "password2" },
-      { username: "user3", password: "password3" },
+      { username: "user1", password: "password1", role: "admin" },
+      { username: "user2", password: "password2", role: "user" },
+      { username: "user3", password: "password3", role: "user" },
     ];
     // const users = await Promise.all(fakeUsers.map((user)=>createUser(user)));
     const users = await Promise.all(fakeUsers.map(createUser));

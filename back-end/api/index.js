@@ -30,6 +30,14 @@ router.use(async (req, res, next) => {
   }
 });
 
+//set user
+router.use((req, res, next) => {
+  if (req.user) {
+    console.log("User is set: ", req.user);
+  }
+  next();
+});
+
 //router to use /users
 router.use("/users", require("./users"));
 

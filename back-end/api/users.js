@@ -6,7 +6,10 @@ const {
   getUserByUsername,
   createUser,
   deleteUser,
+  updatePassword,
+  updateUsername,
 } = require("../db/users");
+const { requireUser } = require("./utils");
 const { JWT_SECRET = "ef3f31f31f31oegnoergf" } = process.env;
 
 // get request /api/users
@@ -50,9 +53,9 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-//register user
+//register user api/users/register
 router.post("/register", async (req, res, next) => {
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
   try {
     if (!username || !password) {
       next({
@@ -62,7 +65,6 @@ router.post("/register", async (req, res, next) => {
     }
     const matchedUsername = await getUserByUsername(username);
     if (matchedUsername) {
-      res.status(401);
       next({
         name: "MatchedUsername",
         message: "Username already exists",
@@ -73,7 +75,7 @@ router.post("/register", async (req, res, next) => {
         message: "Password must be atleast 8 characters",
       });
     } else {
-      const newUser = await createUser({ username, password });
+      const newUser = await createUser({ username, password, role });
       if (!newUser) {
         next({
           name: "UserCreationError",
@@ -93,8 +95,80 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-//delete a user
-router.put("/delete", async (req, res, next) => {
+//change user password
+router.patch("/password", async (req, res, next) => {
+  const { username, password, newPassword } = req.body;
+  try {
+    if (!username || !password || !newPassword) {
+      next({
+        name: "MissingCredentials",
+        message: "Must provide username, password, and a new password",
+      });
+    } else if (newPassword.length < 8) {
+      next({
+        name: "PasswordLength",
+        message: "Password must be atleast 8 characters",
+      });
+    } else if (password == newPassword) {
+      next({
+        name: "PasswordsMatch",
+        message: "New password must be different from old password",
+      });
+    } else {
+      const updatedPassword = await updatePassword({
+        username,
+        password,
+        newPassword,
+      });
+      const user = updatedPassword && updatedPassword.user.username;
+      if (!updatedPassword) {
+        next({
+          name: "PasswordChangeError",
+          message: "Please try to change passsword again",
+        });
+      } else {
+        res.send(`Updated password for ${user}`);
+      }
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+//update username
+router.patch("/username", requireUser, async (req, res, next) => {
+  const { id, username, newUsername } = req.body;
+  try {
+    if (!id || !username || !newUsername) {
+      next({
+        name: "MissingCredentials",
+        message: "Must provide id, username and a new username",
+      });
+    }
+    const matchedUsername = await getUserByUsername(newUsername);
+    if (matchedUsername) {
+      next({
+        name: "MatchedUsername",
+        message: "Username already exists",
+      });
+    } else {
+      const updatedUser = await updateUsername({ id, newUsername });
+      const user = updatedUser && updatedUser.user.username;
+      if (!updatedUser) {
+        next({
+          name: "UsernameChangeError",
+          message: "Please try to change username again",
+        });
+      }
+      res.send(`Updated username to ${user}`);
+    }
+  } catch (err) {
+    next({ err });
+  }
+});
+
+//delete a user api/users/delete
+router.delete("/delete", async (req, res, next) => {
   try {
     const { username, password } = req.body;
     //check if user exists
