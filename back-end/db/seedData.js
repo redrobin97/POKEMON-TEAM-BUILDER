@@ -2,7 +2,7 @@
 const client = require("./client");
 const { createUser } = require("./users.js");
 const { createPokemonTeam } = require("./pokemonTeams.js");
-const { createPokemon } = require("./pokemon.js");
+const { createPokemon, deletePokemon } = require("./pokemon.js");
 
 // drop pre-existing tables
 async function dropTables() {

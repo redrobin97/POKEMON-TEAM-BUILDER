@@ -12,11 +12,6 @@ const {
 const { requireUser } = require("./utils");
 const { JWT_SECRET = "ef3f31f31f31oegnoergf" } = process.env;
 
-// get request /api/users
-router.get("/", (req, res) => {
-  res.send("hello from /api/users");
-});
-
 // POST api/users/login
 router.post("/login", async (req, res, next) => {
   //check for username and password
@@ -24,7 +19,7 @@ router.post("/login", async (req, res, next) => {
   //if not provided => send err
   try {
     if (!username || !password) {
-      next({
+      return next({
         name: "MissingCredentials",
         message: "Please supply a username and password",
       });
@@ -35,7 +30,7 @@ router.post("/login", async (req, res, next) => {
     console.log(user);
     //if no user send incorrect creds
     if (!user) {
-      next({
+      return next({
         name: "IncorrectCredentials",
         message: "Username or password is incorrect",
       });
@@ -58,26 +53,26 @@ router.post("/register", async (req, res, next) => {
   const { username, password, role } = req.body;
   try {
     if (!username || !password) {
-      next({
+      return next({
         name: "MissingCredentials",
         message: "Must provide a username and password",
       });
     }
     const matchedUsername = await getUserByUsername(username);
     if (matchedUsername) {
-      next({
+      return next({
         name: "MatchedUsername",
         message: "Username already exists",
       });
     } else if (password.length < 8) {
-      next({
+      return next({
         name: "PasswordLength",
         message: "Password must be atleast 8 characters",
       });
     } else {
       const newUser = await createUser({ username, password, role });
       if (!newUser) {
-        next({
+        return next({
           name: "UserCreationError",
           message:
             "There was a problem creating your account. Please try again",
@@ -100,17 +95,17 @@ router.patch("/password", async (req, res, next) => {
   const { username, password, newPassword } = req.body;
   try {
     if (!username || !password || !newPassword) {
-      next({
+      return next({
         name: "MissingCredentials",
         message: "Must provide username, password, and a new password",
       });
     } else if (newPassword.length < 8) {
-      next({
+      return next({
         name: "PasswordLength",
         message: "Password must be atleast 8 characters",
       });
     } else if (password == newPassword) {
-      next({
+      return next({
         name: "PasswordsMatch",
         message: "New password must be different from old password",
       });
@@ -122,7 +117,7 @@ router.patch("/password", async (req, res, next) => {
       });
       const user = updatedPassword && updatedPassword.user.username;
       if (!updatedPassword) {
-        next({
+        return next({
           name: "PasswordChangeError",
           message: "Please try to change passsword again",
         });
@@ -140,14 +135,14 @@ router.patch("/username", requireUser, async (req, res, next) => {
   const { id, username, newUsername } = req.body;
   try {
     if (!id || !username || !newUsername) {
-      next({
+      return next({
         name: "MissingCredentials",
         message: "Must provide id, username and a new username",
       });
     }
     const matchedUsername = await getUserByUsername(newUsername);
     if (matchedUsername) {
-      next({
+      return next({
         name: "MatchedUsername",
         message: "Username already exists",
       });
@@ -155,7 +150,7 @@ router.patch("/username", requireUser, async (req, res, next) => {
       const updatedUser = await updateUsername({ id, newUsername });
       const user = updatedUser && updatedUser.user.username;
       if (!updatedUser) {
-        next({
+        return next({
           name: "UsernameChangeError",
           message: "Please try to change username again",
         });
@@ -175,7 +170,7 @@ router.delete("/delete", async (req, res, next) => {
     const deletedUser = await deleteUser({ username, password });
     //handle no user
     if (!deletedUser) {
-      next({ name: "UserNotFound", message: "No user to delete" });
+      return next({ name: "UserNotFound", message: "No user to delete" });
     }
     //
     const { user } = deletedUser;

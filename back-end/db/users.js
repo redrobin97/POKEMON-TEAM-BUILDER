@@ -17,7 +17,6 @@ async function createUser({ username, password, role }) {
     // return res.rows[0];
     return newUser;
   } catch (err) {
-    console.log("Error creating user...");
     throw err;
   }
 }

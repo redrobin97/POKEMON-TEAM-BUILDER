@@ -14,7 +14,6 @@ async function createPokemonTeam({ user_id, team_name }) {
     );
     return newTeam;
   } catch (err) {
-    console.log("error creating new team...");
     throw err;
   }
 }
