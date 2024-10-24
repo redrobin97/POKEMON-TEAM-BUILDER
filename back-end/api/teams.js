@@ -5,16 +5,33 @@ const {
   getTeamById,
   deleteTeam,
   updateTeamName,
+  getPokemonTeam,
 } = require("../db/pokemonTeams");
 const { requireUser, requireAdmin } = require("./utils");
 
-//TODO
-// /pokemon_teams
-//     team_id pk
-//     user_id fk
-//     team_name
-//     timestamp
-// -change teamname o
+//post /api/teams (user_id, team_name)
+router.post("/", async (req, res, next) => {
+  const { user_id, team_name } = req.body;
+  try {
+    if (!user_id || !team_name) {
+      return next({
+        name: "MissingRequirements",
+        message: "Please provide both a user_id and a team_name",
+      });
+    }
+    const newTeam = await createPokemonTeam({ user_id, team_name });
+    if (!newTeam) {
+      return next({
+        name: "TeamCreationError",
+        message: "There was an error creating pokemon team, try again later",
+      });
+    } else {
+      res.send({ message: "New team created successfully!", Team: newTeam });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
 // /delete /api/teams
 router.delete("/", async (req, res, next) => {
@@ -26,14 +43,14 @@ router.delete("/", async (req, res, next) => {
         message: "Need to provide team id to delete team",
       });
     }
-    const teamToDelete = await getTeamById(id);
+    const teamToDelete = await getTeamById({ id });
     if (!teamToDelete) {
       return next({
         name: "TeamNotFound",
         message: "Team to delete does not exist",
       });
     } else {
-      const deletedTeam = deleteTeam(id);
+      const deletedTeam = await deleteTeam({ id });
       if (!deletedTeam) {
         return next({
           name: "DeletionError",
@@ -47,8 +64,8 @@ router.delete("/", async (req, res, next) => {
   }
 });
 
-//update team name /api/teams
-router.patch("/", async (req, res, next) => {
+//update team name /api/teams/name
+router.patch("/name", async (req, res, next) => {
   const { id, newTeamName } = req.body;
   try {
     if (!id || !newTeamName) {
@@ -57,7 +74,7 @@ router.patch("/", async (req, res, next) => {
         message: "Must provide an id and a newTeamName",
       });
     }
-    const teamToUpdate = await getTeamById(id);
+    const teamToUpdate = await getTeamById({ id });
     if (!teamToUpdate) {
       return next({
         name: "TeamNotFound",
@@ -72,6 +89,37 @@ router.patch("/", async (req, res, next) => {
         });
       }
       res.send({ message: "Team name updated!", newName: newTeamName });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+//get team GET /api/teams/{id}
+router.get("/:id", async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    if (!id) {
+      return next({
+        name: "MissingRequirements",
+        message: "Please provide a valid team id",
+      });
+    }
+    const teamToGet = await getTeamById({ id });
+    if (!teamToGet) {
+      return next({
+        name: "TeamNotFound",
+        message: "Team to get does not exist",
+      });
+    } else {
+      const team = await getPokemonTeam({ id });
+      if (!team) {
+        return next({
+          name: "ErrorGettingTeam",
+          message: "There was an error getting team, please try again later",
+        });
+      }
+      res.send({ message: "Successfully got team!", team: team });
     }
   } catch (err) {
     next(err);

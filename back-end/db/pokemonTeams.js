@@ -12,24 +12,15 @@ async function createPokemonTeam({ user_id, team_name }) {
             RETURNING *`,
       [user_id, team_name]
     );
+    if (!newTeam) return null;
     return newTeam;
   } catch (err) {
     throw err;
   }
 }
-//TODO
-// /pokemon_teams
-//     team_id pk
-//     user_id fk
-//     team_name
-//     timestamp
-// -create team o
-// -change teamname o
-// -delete team o
-// get /api/teams
 
 //get team by team id
-async function getTeamById(id) {
+async function getTeamById({ id }) {
   try {
     const {
       rows: [pokemonTeam],
@@ -61,7 +52,7 @@ async function updateTeamName({ id, newTeamName }) {
 }
 
 //delete pokemonteam
-async function deleteTeam(id) {
+async function deleteTeam({ id }) {
   try {
     const { rowCount } = await client.query(
       `
@@ -75,4 +66,26 @@ async function deleteTeam(id) {
   }
 }
 
-module.exports = { createPokemonTeam, getTeamById, deleteTeam, updateTeamName };
+//get all pokemon on a team
+async function getPokemonTeam({ id }) {
+  try {
+    const { rows } = await client.query(
+      `
+    SELECT * FROM pokemon WHERE team_id = $1`,
+      [id]
+    );
+    if (rows.length === 0) return null;
+
+    return rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+module.exports = {
+  createPokemonTeam,
+  getTeamById,
+  deleteTeam,
+  updateTeamName,
+  getPokemonTeam,
+};

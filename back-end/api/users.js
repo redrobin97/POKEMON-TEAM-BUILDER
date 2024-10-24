@@ -27,7 +27,6 @@ router.post("/login", async (req, res, next) => {
 
     //if provided query database for the user by username and password
     const user = await getUser({ username, password });
-    console.log(user);
     //if no user send incorrect creds
     if (!user) {
       return next({
@@ -58,7 +57,7 @@ router.post("/register", async (req, res, next) => {
         message: "Must provide a username and password",
       });
     }
-    const matchedUsername = await getUserByUsername(username);
+    const matchedUsername = await getUserByUsername({ username });
     if (matchedUsername) {
       return next({
         name: "MatchedUsername",
@@ -140,7 +139,7 @@ router.patch("/username", requireUser, async (req, res, next) => {
         message: "Must provide id, username and a new username",
       });
     }
-    const matchedUsername = await getUserByUsername(newUsername);
+    const matchedUsername = await getUserByUsername({ newUsername });
     if (matchedUsername) {
       return next({
         name: "MatchedUsername",

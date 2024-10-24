@@ -14,6 +14,7 @@ async function createUser({ username, password, role }) {
         INSERT INTO users(username, password, role) VALUES($1, $2, $3) ON CONFLICT (username) DO NOTHING RETURNING id, username`,
       [username, hashedpwd, role]
     );
+    if (!newUser) return null;
     // return res.rows[0];
     return newUser;
   } catch (err) {
@@ -22,7 +23,7 @@ async function createUser({ username, password, role }) {
 }
 
 //get user by username
-async function getUserByUsername(username) {
+async function getUserByUsername({ username }) {
   try {
     const { rows } = await client.query(
       `SELECT * FROM users WHERE username = $1`,
@@ -40,9 +41,8 @@ async function getUserByUsername(username) {
 async function getUser({ username, password }) {
   if (!username || !password) return;
   try {
-    const user = await getUserByUsername(username);
+    const user = await getUserByUsername({ username });
     if (!user) {
-      console.log(user);
       return null;
     }
     const hashedpwd = user.password;
@@ -56,7 +56,7 @@ async function getUser({ username, password }) {
 }
 
 //get user by userid
-async function getUserById(id) {
+async function getUserById({ id }) {
   try {
     const {
       rows: [user],

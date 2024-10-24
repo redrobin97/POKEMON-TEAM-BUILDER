@@ -10,6 +10,7 @@ async function createPokemon({ team_id, nickname, pokedex_number }) {
     INSERT INTO pokemon(team_id, nickname, pokedex_number) VALUES ($1, $2, $3) RETURNING *`,
       [team_id, nickname, pokedex_number]
     );
+    if (!newPokemon) return null;
     return newPokemon;
   } catch (err) {
     throw err;
